@@ -1,0 +1,5 @@
+client/node_modules
+service/venv/bin/
+service/venv/lib/
+service/venv/pip-selfcheck.json
+service/venv/pyvenv.cfg

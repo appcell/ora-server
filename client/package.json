@@ -1,0 +1,36 @@
+{
+  "name": "ora-server-client",
+  "version": "0.0.1",
+  "description": "Front end appliction for ora server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/appcell/ora-server.git"
+  },
+  "author": "GenesisX",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/appcell/ora-server/issues"
+  },
+  "homepage": "https://github.com/appcell/ora-server#readme",
+  "dependencies": {
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-redux": "^5.0.6",
+    "react-router": "^4.2.0",
+    "redux": "^3.7.2",
+    "redux-thunk": "^2.2.0",
+    "semantic-ui-react": "^0.78.2"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-react": "^6.24.1",
+    "webpack": "^3.11.0",
+    "webpack-dev-server": "^2.11.1"
+  }
+}
