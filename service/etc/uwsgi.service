@@ -7,7 +7,7 @@ User=ora
 Group=nginx
 WorkingDirectory=/home/ora/ora-server/service/
 Environment="PATH=/home/ora/ora-server/service/venv/bin"
-ExecStart=/home/ora/ora-server/service/venv/bin/uwsgi --ini service/etc/uwsgi.ini
+ExecStart=/home/ora/ora-server/service/venv/bin/uwsgi --ini etc/uwsgi.ini
 
 [Install]
 WantedBy=multi-user.target
