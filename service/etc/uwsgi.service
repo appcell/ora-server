@@ -1,0 +1,10 @@
+[Unit]
+Description=uWSGI instance to serve ora-server
+After=network.target
+
+[Service]
+User=ora
+Group=nginx
+WorkingDirectory=/home/ora/ora-server/
+Environment="PATH=/home/ora/ora-server/service/venv/bin"
+ExecStart=/home/ora/ora-server/service/venv/bin/uwsgi --ini service/etc/uwsgi.ini
