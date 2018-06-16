@@ -13,9 +13,10 @@ def root():
 def check_update(current):
     latest_version = config['update']['client_version']
     if current < latest_version:
-        return jsonify({'is_latest':False, 'new_version':latest_version})
+        return jsonify({'is_latest':False,
+                        'url': '{}download/client/{}'.format(config['host']['url'], latest_version)})
     else:
-        return jsonify({'is_latest':'True'})
+        return jsonify({'is_latest':True})
 
 @app.route("/download/client/<path>")
 def client_download(path):
