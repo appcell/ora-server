@@ -9,21 +9,21 @@ config.read('etc/conf.ini')
 def root():
     return "Hello World!"
 
-@app.route("/api/check_update/<current>")
-def check_update(current):
+@app.route("/api/check_update/<os>/<current>")
+def check_update(os, current):
     latest_version = config['update']['client_version']
     if current < latest_version:
         return jsonify({'is_latest':False,
-                        'url': '{}download/client/{}'.format(config['host']['url'], latest_version)})
+                        'url': '{}download/client/{}/{}'.format(config['host']['url'], os, latest_version)})
     else:
         return jsonify({'is_latest':True})
 
-@app.route("/download/client/<path>")
-def client_download(path):
+@app.route("/download/client/<os>/<path>")
+def client_download(os, path):
     if path is None:
         return 'invalid argument', 400
     try:
-        return send_file('files/ora-{}.zip'.format(path), as_attachment=True)
+        return send_file('files/{}/ora-{}.zip'.format(os, path), as_attachment=True)
     except Exception as err:
         return 'file not found', 404
 
