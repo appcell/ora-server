@@ -3,5 +3,4 @@ service/venv/bin/
 service/venv/lib/
 service/venv/pip-selfcheck.json
 service/venv/pyvenv.cfg
-service/files/
 service/__pycache__/
