@@ -1,7 +1,11 @@
-from flask import Flask, jsonify, send_file, request
+from flask import Flask, jsonify, send_file, request, render_template
 from receive import Archive
 import os
-app = Flask(__name__)
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
+template_path = os.path.join(os.path.dirname(dir_path), 'client/build')
+
+app = Flask(__name__, template_folder=template_path)
 
 import configparser
 config = configparser.ConfigParser()
@@ -10,7 +14,7 @@ config.read('etc/conf.ini')
 
 @app.route("/")
 def root():
-    return "Hello World!"
+    return render_template("index.html")
 
 
 @app.route("/api/check_update/<os>/<current>")
