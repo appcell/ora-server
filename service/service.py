@@ -1,18 +1,46 @@
 from flask import Flask, jsonify, send_file, request, render_template
-from receive import Archive
-import os
+from flask_security import MongoEngineUserDatastore, Security, \
+        auth_token_required, anonymous_user_required
+from flask_security.utils import hash_password
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
-template_path = os.path.join(os.path.dirname(dir_path), 'client/build')
+from api.app import app, db
+from api.receive import Archive
+from api.model.user import User
+from api.model.role import Role
 
-app = Flask(__name__, template_folder=template_path)
-
+# Read server config file
 import configparser
 config = configparser.ConfigParser()
 config.read('etc/conf.ini')
 
+# Flask config
+app.config['SECRET_KEY'] = 'security key!!!!'
+
+# MongoDB config
+app.config['MONGODB_DB'] = 'ora'
+app.config['MONGODB_HOST'] = 'localhost'
+app.config['MONGODB_PORT'] = 27017
+
+# Security config
+app.config['SECURITY_TRACKABLE'] = True
+app.config['SECURITY_CONFIRMABLE'] = True
+app.config['SECURITY_REGISTERABLE'] = True
+app.config['SECURITY_RECOVERABLE'] = True
+app.config['SECURITY_CHANGEABLE'] = True
+app.config['SECURITY_PASSWORD_HASH'] = 'pbkdf2_sha512'
+app.config['SECURITY_PASSWORD_SALT'] = '!!!super secret salt!!!'
+app.config['SECURITY_TOKEN_AUTHENTICATION_KEY'] = True
+
+# Setup Flask-Security
+user_datastore = MongoEngineUserDatastore(db, User, Role)
+security = Security(app, user_datastore)
+
+@app.route("/api/login")
+def login():
+    return 'some shit'
 
 @app.route("/")
+@auth_token_required
 def root():
     return render_template("index.html")
 
@@ -48,7 +76,6 @@ def receive():
     # Archive.validate中会隐式的判断文件名是否符合标准
     file.save(os.path.join('files', 'data', file.filename))
     return 'ok', 204
-
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
