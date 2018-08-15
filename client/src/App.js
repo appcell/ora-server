@@ -215,7 +215,7 @@ const HomepageLayout = () => (
             </p>
           </Grid.Column>
           <Grid.Column floated='right' width={6}>
-            <Image bordered rounded size='large' src='/ora-client.png' />
+            <Image bordered rounded size='large' src='/static/media/ora-client.png' />
           </Grid.Column>
         </Grid.Row>
         <Grid.Row>

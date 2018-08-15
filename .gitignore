@@ -4,3 +4,4 @@ service/venv/lib/
 service/venv/pip-selfcheck.json
 service/venv/pyvenv.cfg
 service/__pycache__/
+*.pyc

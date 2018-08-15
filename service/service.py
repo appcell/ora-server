@@ -1,16 +1,55 @@
-from flask import Flask, jsonify, send_file, request
-from receive import Archive
-import os
-app = Flask(__name__)
+from flask import Flask, jsonify, send_file, request, render_template, send_from_directory
+from flask_security import MongoEngineUserDatastore, Security, \
+        login_required
+from flask_security.utils import hash_password
+from flask_mail import Mail
 
+from api.app import app, db, statc_path
+from api.receive import Archive
+from api.model.user import User
+from api.model.role import Role
+
+# Read server config file
 import configparser
 config = configparser.ConfigParser()
 config.read('etc/conf.ini')
 
+# Flask config
+app.config['SECRET_KEY'] = 'security key!!!! change in production'
+
+# MongoDB config
+app.config['MONGODB_DB'] = 'ora'
+app.config['MONGODB_HOST'] = 'localhost'
+app.config['MONGODB_PORT'] = 27017
+
+# Security config
+app.config['SECURITY_TRACKABLE'] = True
+app.config['SECURITY_CONFIRMABLE'] = True
+app.config['SECURITY_REGISTERABLE'] = True
+app.config['SECURITY_RECOVERABLE'] = True
+app.config['SECURITY_CHANGEABLE'] = True
+app.config['SECURITY_PASSWORD_HASH'] = 'pbkdf2_sha512'
+app.config['SECURITY_PASSWORD_SALT'] = '!!!super secret salt!!! change in production'
+app.config['SECURITY_TOKEN_AUTHENTICATION_HEADER'] = True
+app.config['SECURITY_EMAIL_SENDER'] = 'ora@owdata.org'
+
+# Setup Flask-Security
+user_datastore = MongoEngineUserDatastore(db, User, Role)
+security = Security(app, user_datastore)
+
+# Mail setup
+app.config['MAIL_DEFAULT_SENDER'] = 'ora@owdata.org'
+app.config['MAIL_SERVER'] = 'smtp.example.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USERNAME'] = 'user'
+app.config['MAIL_PASSWORD'] = 'password'
+mail = Mail(app)
 
 @app.route("/")
+@login_required
 def root():
-    return "Hello World!"
+    return render_template("index.html")
 
 
 @app.route("/api/check_update/<os>/<current>")
@@ -45,6 +84,18 @@ def receive():
     file.save(os.path.join('files', 'data', file.filename))
     return 'ok', 204
 
+# Dev static server DO NOT USE IN PRODUCTION
+# @app.route('/static/js/<path:path>')
+# def send_js(path):
+#     return send_from_directory(statc_path + '/js', path)
+
+# @app.route('/static/css/<path:path>')
+# def send_css(path):
+#     return send_from_directory(statc_path + '/css', path)
+
+# @app.route('/static/media/<path:path>')
+# def send_media(path):
+#     return send_from_directory(statc_path + '/media', path)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
