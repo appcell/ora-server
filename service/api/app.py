@@ -7,6 +7,7 @@ from flask_mongoengine import MongoEngine
 cur_dir = path.dirname(path.realpath(__file__))
 parent_dir = path.dirname(cur_dir)
 template_path = path.join(path.dirname(parent_dir), 'client/build')
+statc_path = path.join(template_path, 'static')
 
 app = Flask(__name__, template_folder=template_path)
 
