@@ -12,15 +12,26 @@
   "bugs": {
     "url": "https://github.com/appcell/ora-server/issues"
   },
-  "homepage": "https://github.com/appcell/ora-server#readme",
+  "homepage": "http://owanalyzer.com",
   "devDependencies": {
     "react-scripts": "1.1.4",
-    "semantic-ui-css": "^2.3.3",
-    "semantic-ui-react": "^0.82.0"
+    "semantic-ui-react": "^0.82.3"
   },
   "dependencies": {
-    "react": "^16.4.0",
-    "react-dom": "^16.4.0"
+    "axios": "^0.18.0",
+    "connected-react-router": "^4.4.1",
+    "history": "^4.7.2",
+    "lodash": "^4.17.10",
+    "react": "^16.4.2",
+    "react-dom": "^16.4.2",
+    "react-redux": "^5.0.7",
+    "react-router": "^4.3.1",
+    "react-router-dom": "^4.3.1",
+    "redux": "^4.0.0",
+    "redux-logger": "^3.0.6",
+    "redux-persist": "^5.10.0",
+    "redux-thunk": "^2.3.0",
+    "semantic-ui-css": "^2.2.14"
   },
   "scripts": {
     "start": "react-scripts start",
