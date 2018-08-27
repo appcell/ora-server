@@ -41,8 +41,12 @@ def receive():
         return 'file format error', 403
     if not Archive.validate(file, suffix):
         return 'json error', 403
-    # Archive.validate中会隐式的判断文件名是否符合标准
-    file.save(os.path.join('files', 'data', file.filename))
+
+    path = os.path.join('files', 'data')
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    file.save(Archive.rename(file.filename, path))
     return 'ok', 204
 
 
