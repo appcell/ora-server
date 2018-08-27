@@ -1,7 +1,9 @@
 import zipfile
 import rarfile
 import json
+import os
 from schema import Schema, Optional, And
+from werkzeug import secure_filename
 
 
 class Archive(object):
@@ -26,7 +28,6 @@ class Archive(object):
         :return: True or False
         """
         obj, method = cls._get_obj_method(suffix)
-        archive = method(file, 'r')
         result = []
         ora_file_name = {
             'sheet1': ('data_sheet1.json', ValidateORAFile.sheet1),
@@ -35,6 +36,7 @@ class Archive(object):
             'meta_info': ('metainfo.json', ValidateORAFile.meta_info),
         }
         try:
+            archive = method(file, 'r')
             for k, v in ora_file_name.items():
                 name, method = v
                 data = json.loads(archive.read(name))
@@ -42,6 +44,28 @@ class Archive(object):
             return all(result)
         except:
             return False
+
+    @staticmethod
+    def rename(file_name, files_path):
+        """
+        过滤非法文件名，并判断本地是否有相同文件名的文件。
+        如果有，那么则改成以下格式的新文件名:
+            index_filename.rar
+        并返回文件保存的绝对路径
+        """
+        file_name = secure_filename(file_name)
+        index = 0
+        path = os.path.join(files_path, file_name)
+        while os.path.exists(path):
+            if index == 0:
+                index += 1
+                file_name = '{}_{}'.format(index, file_name)
+            else:
+                file_name = file_name[len(str(index)) + 1:]
+                index += 1
+                file_name = '{}_{}'.format(index, file_name)
+            path = os.path.join(files_path, file_name)
+        return path
 
 
 class ValidateORAFile(object):
