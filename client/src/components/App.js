@@ -1,9 +1,11 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import { withRouter } from 'react-router-dom'
+import { store } from '../store'
 import {
   Button,
   Container,
-  Divider,
   Grid,
   Header,
   Icon,
@@ -14,50 +16,40 @@ import {
   Segment,
   Sidebar,
   Visibility,
+  Dropdown
 } from 'semantic-ui-react'
 
-/* eslint-disable react/no-multi-comp */
-/* Heads up! HomepageHeading uses inline styling, however it's not the best practice. Use CSS or styled components for
- * such things.
- */
-const HomepageHeading = ({ mobile }) => (
-  <Container text>
-    <Header
-      as='h1'
-      content='ORA Data Platform'
-      inverted
-      style={{
-        fontSize: mobile ? '2em' : '4em',
-        fontWeight: 'normal',
-        marginBottom: 0,
-        marginTop: mobile ? '1.5em' : '3em',
-      }}
+import { Route, Switch } from 'react-router' 
+
+import LoginModal from './Login'
+
+import { logout } from '../actions/login'
+
+const LoginMenuItems = (props) => (
+  <Menu.Item position='right'>
+    <LoginModal 
+      inverted={props.inverted} 
+      errorMessage={props.errorMessage}
     />
-    <Header
-      as='h2'
-      content='A dive into competitive Overwatch data.'
-      inverted
-      style={{
-        fontSize: mobile ? '1.5em' : '1.7em',
-        fontWeight: 'normal',
-        marginTop: mobile ? '0.5em' : '1.5em',
-      }}
-    />
-    <Button primary size='huge'>
-      Get Started
-      <Icon name='right arrow' />
+    <Button as='a' inverted={props.inverted} primary={!props.inverted} style={{ marginLeft: '0.5em' }}>
+      Sign Up
     </Button>
-  </Container>
+  </Menu.Item>
 )
 
-HomepageHeading.propTypes = {
-  mobile: PropTypes.bool,
-}
+const UserMenuItems = (props) => (
+  <Menu.Item position='right'>
+    <Dropdown icon='user' text={props.email} pointing className='link item'>
+      <Dropdown.Menu>
+        <Dropdown.Header>User Options</Dropdown.Header>
+        <Dropdown.Item>My Account</Dropdown.Item> 
+        <Dropdown.Divider />
+        <Dropdown.Item onClick={()=>{store.dispatch(logout())}}>Log out</Dropdown.Item>
+      </Dropdown.Menu>
+    </Dropdown>
+  </Menu.Item>
+)
 
-/* Heads up!
- * Neither Semantic UI nor Semantic UI React offer a responsive navbar, however, it can be implemented easily.
- * It can be more complicated, but you can create really flexible markup.
- */
 class DesktopContainer extends Component {
   state = {}
 
@@ -67,6 +59,15 @@ class DesktopContainer extends Component {
   render() {
     const { children } = this.props
     const { fixed } = this.state
+
+    let rightMenu = this.props.loginInfo && this.props.loginInfo.email ? 
+      <UserMenuItems 
+        email={this.props.loginInfo.email}
+      /> :
+      <LoginMenuItems 
+        inverted={!fixed}
+        errorMessage={this.props.errorMessage}
+      />
 
     return (
       <Responsive minWidth={Responsive.onlyTablet.minWidth}>
@@ -78,37 +79,26 @@ class DesktopContainer extends Component {
           <Segment
             inverted
             textAlign='center'
-            style={{ minHeight: 700, padding: '1em 0em' }}
-            vertical
+            style={{ minHeight: 80, padding: '1em 0em' }}
+            vertical 
           >
             <Menu
               fixed={fixed ? 'top' : null}
               inverted={!fixed}
               pointing={!fixed}
               secondary={!fixed}
-              size='large'
+              size='large' 
             >
               <Container>
                 <Menu.Item as='a' active>
                   Home
                 </Menu.Item>
                 <Menu.Item as='a'>Work</Menu.Item>
-                <Menu.Item as='a'>Company</Menu.Item>
-                <Menu.Item as='a'>Careers</Menu.Item>
-                <Menu.Item position='right'>
-                  <Button as='a' inverted={!fixed}>
-                    Log in
-                  </Button>
-                  <Button as='a' inverted={!fixed} primary={fixed} style={{ marginLeft: '0.5em' }}>
-                    Sign Up
-                  </Button>
-                </Menu.Item>
+                {rightMenu}
               </Container>
             </Menu>
-            <HomepageHeading />
           </Segment>
         </Visibility>
-
         {children}
       </Responsive>
     )
@@ -134,6 +124,15 @@ class MobileContainer extends Component {
     const { children } = this.props
     const { sidebarOpened } = this.state
 
+    let rightMenu = this.props.loginInfo && this.props.loginInfo.email ? 
+      <UserMenuItems 
+        email={this.props.loginInfo.email}
+      /> :
+      <LoginMenuItems 
+        inverted={!this.props.fixed} 
+        errorMessage={this.props.errorMessage}
+      />
+
     return (
       <Responsive maxWidth={Responsive.onlyMobile.maxWidth}>
         <Sidebar.Pushable>
@@ -142,10 +141,6 @@ class MobileContainer extends Component {
               Home
             </Menu.Item>
             <Menu.Item as='a'>Work</Menu.Item>
-            <Menu.Item as='a'>Company</Menu.Item>
-            <Menu.Item as='a'>Careers</Menu.Item>
-            <Menu.Item as='a'>Log in</Menu.Item>
-            <Menu.Item as='a'>Sign Up</Menu.Item>
           </Sidebar>
 
           <Sidebar.Pusher
@@ -156,7 +151,7 @@ class MobileContainer extends Component {
             <Segment
               inverted
               textAlign='center'
-              style={{ minHeight: 350, padding: '1em 0em' }}
+              style={{ minHeight: 80, padding: '1em 0em' }}
               vertical
             >
               <Container>
@@ -164,17 +159,9 @@ class MobileContainer extends Component {
                   <Menu.Item onClick={this.handleToggle}>
                     <Icon name='sidebar' />
                   </Menu.Item>
-                  <Menu.Item position='right'>
-                    <Button as='a' inverted>
-                      Log in
-                    </Button>
-                    <Button as='a' inverted style={{ marginLeft: '0.5em' }}>
-                      Sign Up
-                    </Button>
-                  </Menu.Item>
+                  {rightMenu}
                 </Menu>
               </Container>
-              <HomepageHeading mobile />
             </Segment>
 
             {children}
@@ -189,19 +176,36 @@ MobileContainer.propTypes = {
   children: PropTypes.node,
 }
 
-const ResponsiveContainer = ({ children }) => (
+const WelcomePage = () => (
   <div>
-    <DesktopContainer>{children}</DesktopContainer>
-    <MobileContainer>{children}</MobileContainer>
-  </div>
-)
-
-ResponsiveContainer.propTypes = {
-  children: PropTypes.node,
-}
-
-const HomepageLayout = () => (
-  <ResponsiveContainer>
+    <Segment 
+      inverted 
+      textAlign='center'
+      style={{
+        minHeight: 300
+      }}
+    >
+      <Header
+        as='h1'
+        content='ORA Data Platform'
+        inverted
+        style={{
+          paddingTop: '1.5em',
+          fontSize: '3em',
+          fontWeight: 'normal',
+        }}
+      />
+      <Header
+        as='h2'
+        content='A dive into competitive Overwatch data.'
+        inverted
+        style={{
+          fontSize: '1.7em',
+          fontWeight: 'normal',
+          marginTop: '0.5em',
+        }}
+      />
+    </Segment>
     <Segment style={{ padding: '8em 0em' }} vertical>
       <Grid container stackable verticalAlign='middle'>
         <Grid.Row>
@@ -233,32 +237,64 @@ const HomepageLayout = () => (
         </Grid.Row>
       </Grid>
     </Segment>
-
-    <Segment inverted vertical style={{ padding: '5em 0em' }}>
-      <Container>
-        <Grid divided inverted stackable>
-          <Grid.Row>
-            <Grid.Column width={3}>
-              <Header inverted as='h4' content='About' />
-              <List link inverted>
-                <List.Item as='a'>Sitemap</List.Item>
-                <List.Item as='a'>Contact Us</List.Item>
-                <List.Item as='a'>Partnership</List.Item>
-              </List>
-            </Grid.Column>
-            <Grid.Column width={7}>
-              <Header as='h4' inverted>
-                Open Source Project
-              </Header>
-              <p>
-                Contact us if you are able to help.
-              </p>
-            </Grid.Column>
-          </Grid.Row>
-        </Grid>
-      </Container>
-    </Segment>
-  </ResponsiveContainer>
+  </div>
 )
 
-export default HomepageLayout
+const Footer = () => (
+  <Segment inverted vertical style={{ padding: '5em 0em' }}>
+    <Container>
+      <Grid divided inverted stackable>
+        <Grid.Row>
+          <Grid.Column width={3}>
+            <Header inverted as='h4' content='About' />
+            <List link inverted>
+              <List.Item as='a'>Sitemap</List.Item>
+              <List.Item as='a'>Contact Us</List.Item>
+              <List.Item as='a'>Partnership</List.Item>
+            </List>
+          </Grid.Column>
+          <Grid.Column width={7}>
+            <Header as='h4' inverted>
+              Open Source Project
+            </Header>
+            <p>
+              Contact us if you are able to help.
+            </p>
+          </Grid.Column>
+        </Grid.Row>
+      </Grid>
+    </Container>
+  </Segment>
+)
+
+const ResponsiveContainer = ({ children, loginInfo }) => (
+  <div>
+    <DesktopContainer loginInfo={loginInfo}>{children}</DesktopContainer>
+    <MobileContainer loginInfo={loginInfo}>{children}</MobileContainer>
+  </div>
+)
+
+ResponsiveContainer.propTypes = {
+  children: PropTypes.node,
+}
+
+class App extends Component {
+  render() {
+    console.log(this.props)
+    return(
+      <ResponsiveContainer loginInfo={this.props.loginInfo}>
+        <Switch>
+          <Route exact path="/" render={() => (<WelcomePage />)} />
+          <Route exact path="/route/home" render={() => (<div>Logged In!</div>)} />
+        </Switch>
+        <Footer />
+      </ResponsiveContainer>
+    )
+  }
+}
+
+export default withRouter(connect(
+  state => ({
+    loginInfo: state.login
+  })
+)(App))

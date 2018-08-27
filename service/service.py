@@ -1,10 +1,12 @@
-from flask import Flask, jsonify, send_file, request, render_template, send_from_directory
+from flask import Flask, jsonify, send_file, request, \
+render_template, send_from_directory, session
 from flask_security import MongoEngineUserDatastore, Security, \
         login_required
 from flask_security.utils import hash_password
 from flask_mail import Mail
+from flask_wtf import FlaskForm
 
-from api.app import app, db, statc_path
+from api.app import app, db, statc_path, template_path
 from api.receive import Archive
 from api.model.user import User
 from api.model.role import Role
@@ -15,7 +17,7 @@ config = configparser.ConfigParser()
 config.read('etc/conf.ini')
 
 # Flask config
-app.config['SECRET_KEY'] = 'security key!!!! change in production'
+app.config['SECRET_KEY'] = '!!!security key!!! change in production'
 
 # MongoDB config
 app.config['MONGODB_DB'] = 'ora'
@@ -32,6 +34,7 @@ app.config['SECURITY_PASSWORD_HASH'] = 'pbkdf2_sha512'
 app.config['SECURITY_PASSWORD_SALT'] = '!!!super secret salt!!! change in production'
 app.config['SECURITY_TOKEN_AUTHENTICATION_HEADER'] = True
 app.config['SECURITY_EMAIL_SENDER'] = 'ora@owdata.org'
+app.config['SECURITY_URL_PREFIX'] = '/api'
 
 # Setup Flask-Security
 user_datastore = MongoEngineUserDatastore(db, User, Role)
@@ -47,10 +50,15 @@ app.config['MAIL_PASSWORD'] = 'password'
 mail = Mail(app)
 
 @app.route("/")
-@login_required
 def root():
-    return render_template("index.html")
+    form = FlaskForm()
+    return render_template("index.html", form=form)
 
+# Reserve url for redux router
+@app.route("/route/<path:path>")
+def redux_route(path):
+    form = FlaskForm()
+    return render_template("index.html", form=form)
 
 @app.route("/api/check_update/<os>/<current>")
 def check_update(os, current):
@@ -96,6 +104,22 @@ def receive():
 # @app.route('/static/media/<path:path>')
 # def send_media(path):
 #     return send_from_directory(statc_path + '/media', path)
+
+# @app.route('/service-worker.js')
+# def send_sw_js():
+#     return send_from_directory(template_path , 'service-worker.js')
+
+# @app.route('/manifest.json')
+# def send_manifest():
+#     return send_from_directory(template_path , 'manifest.json')
+
+# @app.route('/asset-manifest.json')
+# def send_asset_manifest():
+#     return send_from_directory(template_path , 'asset-manifest.json')
+
+# @app.route('/favicon.ico')
+# def send_favicon():
+#     return send_from_directory(template_path , 'favicon.ico')
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
